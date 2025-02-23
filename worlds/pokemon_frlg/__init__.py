@@ -784,6 +784,7 @@ class PokemonFRLGWorld(World):
             "elite_four_rematch_count",
             "cerulean_cave_requirement",
             "cerulean_cave_count",
+            "death_link",
             "provide_hints"
         )
         slot_data["trainersanity"] = 1 if self.options.trainersanity != Trainersanity.special_range_names["none"] else 0

@@ -3,13 +3,14 @@ from NetUtils import ClientStatus
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 from .data import data
-from .options import Goal
+from .options import Goal, Toggle
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
 
 DEXSANITY_OFFSET = 0x5000
 FAMESANITY_OFFSET = 0x6000
+PARTYMON_SIZE = 0x64
 
 BASE_ROM_NAME: Dict[str, str] = {
     "firered": "pokemon red version",
@@ -131,6 +132,11 @@ class PokemonFRLGClient(BizHawkClient):
     local_set_events: Dict[str, bool]
     local_set_fly_unlocks: Dict[str, bool]
     caught_pokemon: int
+
+    death_counter: Optional[int]
+    previous_death_link: float
+    ignore_next_death_link: bool
+
     current_map: Tuple[int, int]
 
     def __init__(self) -> None:
@@ -143,6 +149,9 @@ class PokemonFRLGClient(BizHawkClient):
         self.local_hints = []
         self.caught_pokemon = 0
         self.current_map = (0, 0)
+        self.death_counter = None
+        self.previous_death_link = 0
+        self.ignore_next_death_link = False
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -427,6 +436,87 @@ class PokemonFRLGClient(BizHawkClient):
         except bizhawk.RequestFailedError:
             # Exit handler and return to main loop to reconnect
             pass
+
+    async def handle_death_link(self, ctx: "BizHawkClientContext", guards: Dict[str, Tuple[int, bytes, str]]) -> None:
+        """
+        Checks whether the player has died while connected and sends a death link if so. Queues a death link in the game
+        if a new one has been received.
+        """
+        if ctx.slot_data.get("death_link", Toggle.option_false) == Toggle.option_true:
+            if "DeathLink" not in ctx.tags:
+                await ctx.update_death_link(True)
+                self.previous_death_link = ctx.last_death_link
+
+            sb1_address = int.from_bytes(guards["SAVE BLOCK 1"][1], "little")
+            sb2_address = int.from_bytes(guards["SAVE BLOCK 2"][1], "little")
+
+            read_result = await bizhawk.guarded_read(
+                ctx.bizhawk_ctx, [
+                    (sb1_address + 0x1200 + (52 * 4), 4, "System Bus"),    # White out stat
+                    (sb1_address + 0x1200 + (22 * 4), 4, "System Bus"),    # Canary stat
+                    (sb2_address + 0xF20, 4, "System Bus"),                # Encryption key
+                    (sb1_address + 0x290, 4, "System Bus"),                # Money
+                    (sb1_address + 0xEE0 + (0x820 >> 3), 1, "System Bus"), # Badges
+                    (sb1_address + 0x38, PARTYMON_SIZE * 6, "System Bus"), # Party
+                ],
+                [guards["SAVE BLOCK 1"], guards["SAVE BLOCK 2"]]
+            )
+            if read_result is None:  # Save block moved
+                return
+
+            encryption_key = int.from_bytes(read_result[2], "little")
+            times_whited_out = int.from_bytes(read_result[0], "little") ^ encryption_key
+
+            # Canary is an unused stat that will always be 0. There is a low chance that we've done this read on
+            # a frame where the user has just entered a battle and the encryption key has been changed, but the data
+            # has not yet been encrypted with the new key. If `canary` is 0, `times_whited_out` is correct.
+            canary = int.from_bytes(read_result[1], "little") ^ encryption_key
+
+            # Skip all deathlink code if save is not yet loaded (encryption key is zero) or white out stat not yet
+            # initialized (starts at 100 as a safety for subtracting values from an unsigned int).
+            if canary == 0 and encryption_key != 0 and times_whited_out >= 100:
+                if self.previous_death_link != ctx.last_death_link:
+                    self.previous_death_link = ctx.last_death_link
+                    if self.ignore_next_death_link:
+                        self.ignore_next_death_link = False
+                    else:
+                        await bizhawk.write(
+                            ctx.bizhawk_ctx,
+                            [(data.ram_addresses["gArchipelagoDeathLinkQueued"], [1], "System Bus")]
+                        )
+
+                if self.death_counter is None:
+                    self.death_counter = times_whited_out
+                elif times_whited_out > self.death_counter:
+                    # Money lost is based on badge count and your main's level
+                    current_money = int.from_bytes(read_result[3], 'little') ^ encryption_key
+                    num_badges = int.from_bytes(read_result[4], 'little').bit_count()
+                    money_lost = [8, 16, 24, 36, 48, 64, 80, 100, 120][num_badges] * self.get_mon_highest_level(read_result[5])
+                    if money_lost > current_money:
+                        money_lost = current_money
+                    await ctx.send_death(f"{ctx.player_names[ctx.slot]} is out of usable POKéMON!\\"
+                                         f"{ctx.player_names[ctx.slot]} panicked and lost ¥{money_lost}…\\"
+                                         "… … … …\\"
+                                         f"{ctx.player_names[ctx.slot]} whited out!")
+                    self.ignore_next_death_link = True
+                    self.death_counter = times_whited_out
+
+    def get_mon_highest_level(self, party_raw: bytes):
+        return max(self.get_mon_level(party_raw, i) for i in range(6))
+
+    def get_mon_level(self, party_raw: bytes, slot: int):
+        # Level is only valid if the slot is occupied and the mon is not an Egg
+        mon = party_raw[(slot * PARTYMON_SIZE):][:PARTYMON_SIZE]
+        if mon[19] & 2:  # sanity has species
+            personality = int.from_bytes(mon[:4], 'little')
+            otid = int.from_bytes(mon[4:8], 'little')
+            # PokemonnSubstruct3
+            substruct_offset = [3,2,3,2,1,1,3,2,3,2,1,1,3,2,3,2,1,1,0,0,0,0,0,0][personality % 24]
+            is_egg_byte = mon[32 + 12 * substruct_offset + 7]
+            if not (is_egg_byte ^ (otid >> 24) ^ (personality >> 24)) & 0x40:  # only this bit matters
+                return mon[84]  # level
+
+        return 0
 
     async def handle_received_items(self,
                                     ctx: "BizHawkClientContext",

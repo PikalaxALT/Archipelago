@@ -253,6 +253,7 @@ class PokemonFRLGClient(BizHawkClient):
             sb1_address = int.from_bytes(guards["SAVE BLOCK 1"][1], "little")
             sb2_address = int.from_bytes(guards["SAVE BLOCK 2"][1], "little")
 
+            await self.handle_death_link(ctx, guards)
             await self.handle_received_items(ctx, guards)
             await self.handle_map_update(ctx, guards)
 

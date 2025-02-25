@@ -480,7 +480,7 @@ class PokemonFRLGClient(BizHawkClient):
                     else:
                         await bizhawk.write(
                             ctx.bizhawk_ctx,
-                            [(data.ram_addresses["gArchipelagoDeathLinkQueued"], [1], "System Bus")]
+                            [(data.ram_addresses[self.game_version]["gArchipelagoDeathLinkQueued"], [1], "System Bus")]
                         )
 
                 if self.death_counter is None:

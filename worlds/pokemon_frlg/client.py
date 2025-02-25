@@ -453,8 +453,8 @@ class PokemonFRLGClient(BizHawkClient):
 
             read_result = await bizhawk.guarded_read(
                 ctx.bizhawk_ctx, [
-                    (sb1_address + 0x1200 + (52 * 4), 4, "System Bus"),    # White out stat
-                    (sb1_address + 0x1200 + (22 * 4), 4, "System Bus"),    # Canary stat
+                    (sb1_address + 0x1450 + (52 * 4), 4, "System Bus"),    # White out stat
+                    (sb1_address + 0x1450 + (22 * 4), 4, "System Bus"),    # Canary stat
                     (sb2_address + 0xF20, 4, "System Bus"),                # Encryption key
                 ],
                 [guards["SAVE BLOCK 1"], guards["SAVE BLOCK 2"]]

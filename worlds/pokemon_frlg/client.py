@@ -456,9 +456,6 @@ class PokemonFRLGClient(BizHawkClient):
                     (sb1_address + 0x1200 + (52 * 4), 4, "System Bus"),    # White out stat
                     (sb1_address + 0x1200 + (22 * 4), 4, "System Bus"),    # Canary stat
                     (sb2_address + 0xF20, 4, "System Bus"),                # Encryption key
-                    (sb1_address + 0x290, 4, "System Bus"),                # Money
-                    (sb1_address + 0xEE0 + (0x820 >> 3), 1, "System Bus"), # Badges
-                    (sb1_address + 0x38, PARTYMON_SIZE * 6, "System Bus"), # Party
                 ],
                 [guards["SAVE BLOCK 1"], guards["SAVE BLOCK 2"]]
             )
@@ -489,35 +486,9 @@ class PokemonFRLGClient(BizHawkClient):
                 if self.death_counter is None:
                     self.death_counter = times_whited_out
                 elif times_whited_out > self.death_counter:
-                    # Money lost is based on badge count and your main's level
-                    current_money = int.from_bytes(read_result[3], 'little') ^ encryption_key
-                    num_badges = int.from_bytes(read_result[4], 'little').bit_count()
-                    money_lost = [8, 16, 24, 36, 48, 64, 80, 100, 120][num_badges] * self.get_mon_highest_level(read_result[5])
-                    if money_lost > current_money:
-                        money_lost = current_money
-                    await ctx.send_death(f"{ctx.player_names[ctx.slot]} is out of usable POKéMON!\\"
-                                         f"{ctx.player_names[ctx.slot]} panicked and lost ¥{money_lost}…\\"
-                                         "… … … …\\"
-                                         f"{ctx.player_names[ctx.slot]} whited out!")
+                    await ctx.send_death(f"{ctx.player_names[ctx.slot]} is out of usable POKéMON! {ctx.player_names[ctx.slot]} whited out!")
                     self.ignore_next_death_link = True
                     self.death_counter = times_whited_out
-
-    def get_mon_highest_level(self, party_raw: bytes):
-        return max(self.get_mon_level(party_raw, i) for i in range(6))
-
-    def get_mon_level(self, party_raw: bytes, slot: int):
-        # Level is only valid if the slot is occupied and the mon is not an Egg
-        mon = party_raw[(slot * PARTYMON_SIZE):][:PARTYMON_SIZE]
-        if mon[19] & 2:  # sanity has species
-            personality = int.from_bytes(mon[:4], 'little')
-            otid = int.from_bytes(mon[4:8], 'little')
-            # PokemonnSubstruct3
-            substruct_offset = [3,2,3,2,1,1,3,2,3,2,1,1,3,2,3,2,1,1,0,0,0,0,0,0][personality % 24]
-            is_egg_byte = mon[32 + 12 * substruct_offset + 7]
-            if not (is_egg_byte ^ (otid >> 24) ^ (personality >> 24)) & 0x40:  # only this bit matters
-                return mon[84]  # level
-
-        return 0
 
     async def handle_received_items(self,
                                     ctx: "BizHawkClientContext",

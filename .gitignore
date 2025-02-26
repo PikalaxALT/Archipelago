@@ -200,3 +200,7 @@ minecraft_versions.json
 .LSOverride
 Thumbs.db
 [Dd]esktop.ini
+
+# cmake
+compile_commands.json
+build-cmake-*/

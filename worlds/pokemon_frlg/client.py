@@ -443,52 +443,56 @@ class PokemonFRLGClient(BizHawkClient):
         Checks whether the player has died while connected and sends a death link if so. Queues a death link in the game
         if a new one has been received.
         """
-        if ctx.slot_data.get("death_link", Toggle.option_false) == Toggle.option_true:
-            if "DeathLink" not in ctx.tags:
-                await ctx.update_death_link(True)
-                self.previous_death_link = ctx.last_death_link
+        if ctx.slot_data.get("death_link", Toggle.option_false) != Toggle.option_true:
+            return
 
-            sb1_address = int.from_bytes(guards["SAVE BLOCK 1"][1], "little")
-            sb2_address = int.from_bytes(guards["SAVE BLOCK 2"][1], "little")
+        if "DeathLink" not in ctx.tags:
+            await ctx.update_death_link(True)
+            self.previous_death_link = ctx.last_death_link
 
-            read_result = await bizhawk.guarded_read(
-                ctx.bizhawk_ctx, [
-                    (sb1_address + 0x1450 + (52 * 4), 4, "System Bus"),    # White out stat
-                    (sb1_address + 0x1450 + (22 * 4), 4, "System Bus"),    # Canary stat
-                    (sb2_address + 0xF20, 4, "System Bus"),                # Encryption key
-                ],
-                [guards["SAVE BLOCK 1"], guards["SAVE BLOCK 2"]]
-            )
-            if read_result is None:  # Save block moved
-                return
+        sb1_address = int.from_bytes(guards["SAVE BLOCK 1"][1], "little")
+        sb2_address = int.from_bytes(guards["SAVE BLOCK 2"][1], "little")
 
-            encryption_key = int.from_bytes(read_result[2], "little")
-            times_whited_out = int.from_bytes(read_result[0], "little") ^ encryption_key
+        read_result = await bizhawk.guarded_read(
+            ctx.bizhawk_ctx, [
+                (sb1_address + 0x1450 + (52 * 4), 4, "System Bus"),    # White out stat
+                (sb1_address + 0x1450 + (22 * 4), 4, "System Bus"),    # Canary stat
+                (sb2_address + 0xF20, 4, "System Bus"),                # Encryption key
+            ],
+            [guards["SAVE BLOCK 1"], guards["SAVE BLOCK 2"]]
+        )
+        if read_result is None:  # Save block moved
+            return
 
-            # Canary is an unused stat that will always be 0. There is a low chance that we've done this read on
-            # a frame where the user has just entered a battle and the encryption key has been changed, but the data
-            # has not yet been encrypted with the new key. If `canary` is 0, `times_whited_out` is correct.
-            canary = int.from_bytes(read_result[1], "little") ^ encryption_key
+        encryption_key = int.from_bytes(read_result[2], "little")
+        times_whited_out = int.from_bytes(read_result[0], "little") ^ encryption_key
 
-            # Skip all deathlink code if save is not yet loaded (encryption key is zero) or white out stat not yet
-            # initialized (starts at 100 as a safety for subtracting values from an unsigned int).
-            if canary == 0 and encryption_key != 0 and times_whited_out >= 100:
-                if self.previous_death_link != ctx.last_death_link:
-                    self.previous_death_link = ctx.last_death_link
-                    if self.ignore_next_death_link:
-                        self.ignore_next_death_link = False
-                    else:
-                        await bizhawk.write(
-                            ctx.bizhawk_ctx,
-                            [(data.ram_addresses[self.game_version]["gArchipelagoDeathLinkQueued"], [1], "System Bus")]
-                        )
+        # Canary is an unused stat that will always be 0. There is a low chance that we've done this read on
+        # a frame where the user has just entered a battle and the encryption key has been changed, but the data
+        # has not yet been encrypted with the new key. If `canary` is 0, `times_whited_out` is correct.
+        canary = int.from_bytes(read_result[1], "little") ^ encryption_key
 
-                if self.death_counter is None:
-                    self.death_counter = times_whited_out
-                elif times_whited_out > self.death_counter:
-                    await ctx.send_death(f"{ctx.player_names[ctx.slot]} is out of usable POKéMON! {ctx.player_names[ctx.slot]} whited out!")
-                    self.ignore_next_death_link = True
-                    self.death_counter = times_whited_out
+        # Skip all deathlink code if save is not yet loaded (encryption key is zero) or white out stat not yet
+        # initialized (starts at 100 as a safety for subtracting values from an unsigned int).
+        if canary != 0 or encryption_key == 0 or times_whited_out < 100:
+            return
+
+        if self.previous_death_link != ctx.last_death_link:
+            self.previous_death_link = ctx.last_death_link
+            if self.ignore_next_death_link:
+                self.ignore_next_death_link = False
+            else:
+                await bizhawk.write(
+                    ctx.bizhawk_ctx,
+                    [(data.ram_addresses[self.game_version]["gArchipelagoDeathLinkQueued"], [1], "System Bus")]
+                )
+
+        if self.death_counter is None:
+            self.death_counter = times_whited_out
+        elif times_whited_out > self.death_counter:
+            await ctx.send_death(f"{ctx.player_names[ctx.slot]} is out of usable POKéMON! {ctx.player_names[ctx.slot]} whited out!")
+            self.ignore_next_death_link = True
+            self.death_counter = times_whited_out
 
     async def handle_received_items(self,
                                     ctx: "BizHawkClientContext",

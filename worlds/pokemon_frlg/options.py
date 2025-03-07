@@ -47,6 +47,14 @@ class RandomStartingTown(Toggle):
     display_name = "Random Starting Town"
 
 
+class RandomizeFlyDestinations(Toggle):
+    """
+    Randomizes where each fly point takes you. The new fly destinations can be almost any outdoor warp point in the
+    game with a few exceptions (Cycling Road Gates for example).
+    """
+    display_name = "Randomize Fly Destinations"
+
+
 class ShuffleBadges(DefaultOnToggle):
     """
     Shuffle Gym Badges into the general item pool. If turned off, Badges will be shuffled among themselves.
@@ -1006,6 +1014,7 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     goal: Goal
     kanto_only: KantoOnly
     random_starting_town: RandomStartingTown
+    randomize_fly_destinations: RandomizeFlyDestinations
 
     shuffle_badges: ShuffleBadges
     shuffle_hidden: ShuffleHiddenItems

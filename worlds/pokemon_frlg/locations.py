@@ -85,7 +85,7 @@ fly_item_exclusion_map = {
     "Saffron City": "ITEM_FLY_SAFFRON",
     "One Island Town": "ITEM_FLY_ONE_ISLAND",
     "Two Island Town": "ITEM_FLY_TWO_ISLAND",
-    "Three Island Town": "ITEM_FLY_THREE_ISLAND",
+    "Three Island Town South": "ITEM_FLY_THREE_ISLAND",
     "Four Island Town": "ITEM_FLY_FOUR_ISLAND",
     "Five Island Town": "ITEM_FLY_FIVE_ISLAND",
     "Six Island Town": "ITEM_FLY_SIX_ISLAND",

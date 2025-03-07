@@ -223,7 +223,7 @@ def set_default_rules(world: "PokemonFRLGWorld"):
              lambda state: can_cut(state, player, world))
     set_rule(world.get_entrance("Vermilion City Near Gym Surfing Spot"),
              lambda state: can_surf(state, player, world))
-    set_rule(world.get_entrance("Vermilion Harbor"),
+    set_rule(world.get_entrance("Vermilion City Checkpoint"),
              lambda state: state.has("S.S. Ticket", player))
 
     # S.S. Anne

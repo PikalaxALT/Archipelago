@@ -69,11 +69,507 @@ STARTING_TOWNS = {
     "SPAWN_ROUTE10": "Route 10 North",
     "SPAWN_ONE_ISLAND": "One Island Town",
     "SPAWN_TWO_ISLAND": "Two Island Town",
-    "SPAWN_THREE_ISLAND": "Three Island Town",
+    "SPAWN_THREE_ISLAND": "Three Island Town South",
     "SPAWN_FOUR_ISLAND": "Four Island Town",
     "SPAWN_FIVE_ISLAND": "Five Island Town",
     "SPAWN_SEVEN_ISLAND": "Seven Island Town",
     "SPAWN_SIX_ISLAND": "Six Island Town"
+}
+
+# Data is formatted as (Map Group, Map Num, X-Coord, Y-Coord, Region Map ID, Region Map Index)
+kanto_fly_destinations = {
+    "Pallet Town": {
+        "Pallet Town": [
+            (3, 0, 6, 8, 1, 246),
+            (3, 0, 15, 8, 1, 246),
+            (3, 0, 16, 14, 1, 246)
+        ]
+    },
+    "Viridian City": {
+        "Viridian City South": [
+            (3, 1, 25, 12, 1, 180),
+            (3, 1, 25, 19, 1, 180),
+            (3, 1, 36, 20, 1, 180),
+            (3, 1, 26, 27, 1, 180)
+        ],
+        "Viridian City North": [
+            (3, 1, 36, 11, 1, 180)
+        ]
+    },
+    "Pewter City": {
+        "Pewter City": [
+            (3, 2, 17, 7, 1, 92),
+            (3, 2, 33, 12, 1, 92),
+            (3, 2, 15, 17, 1, 92),
+            (3, 2, 28, 19, 1, 92),
+            (3, 2, 17, 26, 1, 92),
+            (3, 2, 9, 31, 1, 92)
+        ],
+        "Pewter City Near Museum": [
+            (3, 2, 9, 25, 5, 92)
+        ]
+    },
+    "Cerulean City": {
+        "Cerulean City": [
+            (3, 3, 10, 12, 1, 80),
+            (3, 3, 17, 12, 1, 80),
+            (3, 3, 30, 12, 1, 80),
+            (3, 3, 15, 18, 1, 80),
+            (3, 3, 22, 20, 1, 80),
+            (3, 3, 13, 29, 1, 80),
+            (3, 3, 23, 29, 1, 80),
+            (3, 3, 29, 29, 1, 80)
+        ],
+        "Cerulean City Backyard": [
+            (3, 3, 10, 8, 1, 80)
+        ],
+        "Cerulean City Outskirts": [
+            (3, 3, 31, 8, 1, 80)
+        ],
+        "Cerulean City Near Cave": [
+            (3, 3, 1, 13, 1, 80)
+        ]
+    },
+    "Vermilion City": {
+        "Vermilion City": [
+            (3, 5, 9, 7, 1, 212),
+            (3, 5, 15, 7, 1, 212),
+            (3, 5, 12, 18, 1, 212),
+            (3, 5, 19, 18, 1, 212),
+            (3, 5, 29, 18, 1, 212),
+            (3, 5, 28, 25, 1, 212)
+        ],
+        "Vermilion City Near Gym": [
+            (3, 5, 14, 26, 1, 212)
+        ],
+        "Vermilion City Near Harbor": [
+            (3, 5, 23, 34, 1, 212)
+        ]
+    },
+    "Lavender Town": {
+        "Lavender Town": [
+            (3, 4, 6, 6, 1, 150),
+            (3, 4, 18, 7, 1, 150),
+            (3, 4, 10, 12, 1, 150),
+            (3, 4, 20, 16, 1, 150),
+            (3, 4, 5, 17, 1, 150),
+            (3, 4, 10, 17, 1, 150)
+        ]
+    },
+    "Celadon City": {
+        "Celadon City": [
+            (3, 6, 30, 4, 1, 143),
+            (3, 6, 30, 12, 1, 143),
+            (3, 6, 48, 12, 1, 143),
+            (3, 6, 11, 15, 1, 143),
+            (3, 6, 15, 15, 1, 143),
+            (3, 6, 39, 21, 1, 143),
+            (3, 6, 34, 22, 1, 143),
+            (3, 6, 37, 30, 1, 143),
+            (3, 6, 41, 30, 1, 143),
+            (3, 6, 49, 30, 1, 143)
+        ],
+        "Celadon City Near Gym": [
+            (3, 6, 11, 31, 1, 143)
+        ]
+    },
+    "Fuchsia City": {
+        "Fuchsia City": [
+            (3, 7, 24, 6, 1, 276),
+            (3, 7, 11, 16, 1, 276),
+            (3, 7, 28, 17, 1, 276),
+            (3, 7, 14, 32, 1, 276),
+            (3, 7, 19, 32, 1, 276),
+            (3, 7, 25, 32, 1, 276),
+            (3, 7, 33, 32, 1, 276),
+            (3, 7, 38, 32, 1, 276),
+            (3, 7, 9, 33, 1, 276)
+        ],
+        "Fuchsia City Backyard": [
+            (3, 7, 39, 28, 1, 276)
+        ]
+    },
+    "Saffron City": {
+        "Saffron City": [
+            (3, 10, 34, 6, 1, 146),
+            (3, 10, 40, 13, 1, 146),
+            (3, 10, 46, 13, 1, 146),
+            (3, 10, 22, 15, 1, 146),
+            (3, 10, 27, 22, 1, 146),
+            (3, 10, 40, 22, 1, 146),
+            (3, 10, 47, 22, 1, 146),
+            (3, 10, 8, 27, 1, 146),
+            (3, 10, 58, 27, 1, 146),
+            (3, 10, 33, 31, 1, 146),
+            (3, 10, 24, 39, 1, 146),
+            (3, 10, 43, 39, 1, 146),
+            (3, 10, 34, 46, 1, 146)
+        ]
+    },
+    "Cinnabar Island": {
+        "Cinnabar Island": [
+            (3, 8, 8, 4, 1, 312),
+            (3, 8, 20, 5, 1, 312),
+            (3, 8, 8, 10, 1, 312),
+            (3, 8, 14, 12, 1, 312),
+            (3, 8, 19, 12, 1, 312),
+        ]
+    },
+    "Indigo Plateau": {
+        "Indigo Plateau": [
+            (3, 9, 11, 7, 1, 68)
+        ]
+    },
+    "Route 2": {
+        "Route 2 Southwest": [
+            (3, 20, 5, 52, 1, 136)
+        ],
+        "Route 2 Northwest": [
+            (3, 20, 5, 13, 1, 114)
+        ],
+        "Route 2 Northeast": [
+            (3, 20, 17, 12, 1, 114),
+            (3, 20, 17, 23, 1, 114)
+        ],
+        "Route 2 East": [
+            (3, 20, 18, 41, 1, 136)
+        ],
+        "Route 2 Southeast": [
+            (3, 20, 18, 47, 1, 136)
+        ]
+    },
+    "Route 4": {
+        "Route 4 West": [
+            (3, 22, 12, 6, 1, 74),
+            (3, 22, 19, 6, 1, 75)
+        ],
+        "Route 4 East": [
+            (3, 22, 32, 6, 1, 75)
+        ]
+    },
+    "Route 5": {
+        "Route 5": [
+            (3, 23, 23, 26, 1, 124),
+            (3, 23, 24, 32, 1, 124)
+        ],
+        "Route 5 Near Tunnel": [
+            (3, 23, 31, 32, 1, 124)
+        ]
+    },
+    "Route 6": {
+        "Route 6": [
+            (3, 24, 12, 6, 1, 168)
+        ],
+        "Route 6 Near Tunnel": [
+            (3, 24, 19, 14, 1, 168)
+        ]
+    },
+    "Route 7": {
+        "Route 7": [
+            (3, 25, 15, 10, 1, 145)
+        ],
+        "Route 7 Near Tunnel": [
+            (3, 25, 7, 15, 1, 144)
+        ]
+    },
+    "Route 8": {
+        "Route 8": [
+            (3, 26, 7, 10, 1, 147)
+        ],
+        "Route 8 Near Tunnel": [
+            (3, 26, 13, 5, 1, 147)
+        ]
+    },
+    "Route 10": {
+        "Route 10 North": [
+            (3, 28, 8, 20, 1, 84),
+            (3, 28, 13, 21, 1, 84)
+        ],
+        "Route 10 South": [
+            (3, 28, 8, 58, 1, 128)
+        ],
+        "Route 10 Near Power Plant": [
+            (3, 28, 7, 41, 1, 106)
+        ],
+        "Route 10 Near Power Plant Back": [
+            (3, 28, 2, 37, 1, 106)
+        ]
+    },
+    "Route 11": {
+        "Route 11 West": [
+            (3, 29, 6, 8, 1, 213),
+            (3, 29, 58, 10, 1, 215)
+        ],
+        "Route 11 East": [
+            (3, 29, 65, 10, 1, 215)
+        ]
+    },
+    "Route 12": {
+        "Route 12 North": [
+            (3, 30, 14, 15, 1, 172)
+        ],
+        "Route 12 Center": [
+            (3, 30, 14, 22, 1, 172)
+        ],
+        "Route 12 South": [
+            (3, 30, 12, 87, 1, 238)
+        ]
+    },
+    "Route 15": {
+        "Route 15 South": [
+            (3, 33, 16, 11, 1, 277)
+        ],
+        "Route 15 Southwest": [
+            (3, 33, 9, 11, 1, 277)
+        ]
+    },
+    "Route 16": {
+        "Route 16 Northeast": [
+            (3, 34, 27, 6, 1, 141)
+        ],
+        "Route 16 Northwest": [
+            (3, 34, 10, 6, 1, 139),
+            (3, 34, 20, 6, 1, 140)
+        ],
+        "Route 16 Center": [
+            (3, 34, 27, 13, 1, 141)
+        ]
+    },
+    "Route 18": {
+        "Route 18 East": [
+            (3, 36, 48, 9, 1, 275)
+        ]
+    },
+    "Route 20": {
+        "Route 20 Near North Cave": [
+            (3, 38, 60, 9, 1, 316)
+        ],
+        "Route 20 Near South Cave": [
+            (3, 38, 72, 15, 1, 317)
+        ]
+    },
+    "Route 22": {
+        "Route 22": [
+            (3, 41, 8, 6, 1, 178)
+        ]
+    },
+    "Route 23": {
+        "Route 23 South": [
+            (3, 42, 8, 153, 1, 156)
+        ],
+        "Route 23 Near Cave": [
+            (3, 42, 5, 29, 1, 90)
+        ],
+        "Route 23 North": [
+            (3, 42, 18, 29, 1, 90)
+        ]
+    },
+    "Route 25": {
+        "Route 25": [
+            (3, 44, 51, 5, 1, 38)
+        ]
+    },
+    "Navel Rock": {
+        "Navel Rock Exterior": [
+            (2, 0, 9, 9, 3, 186),
+            (2, 0, 9, 16, 3, 186)
+        ]
+    },
+    "Birth Island": {
+        "Birth Island Exterior": [
+            (2, 56, 15, 24, 4, 304)
+        ]
+    }
+}
+
+sevii_fly_destinations = {
+    "One Island Town": {
+        "One Island Town": [
+            (3, 12, 14, 6, 2, 177),
+            (3, 12, 19, 10, 2, 177),
+            (3, 12, 8, 12, 2, 177),
+            (3, 12, 12, 18, 2, 177)
+        ]
+    },
+    "Kindle Road": {
+        "Kindle Road Center": [
+            (3, 45, 15, 59, 2, 112)
+        ],
+        "Kindle Road North": [
+            (3, 45, 11, 6, 2, 68)
+        ]
+    },
+    "Two Island Town": {
+        "Two Island Town": [
+            (3, 13, 10, 8, 2, 207),
+            (3, 13, 21, 8, 2, 207),
+            (3, 13, 33, 10, 2, 207),
+            (3, 13, 39, 10, 2, 207)
+        ]
+    },
+    "Cape Brink": {
+        "Cape Brink": [
+            (3, 47, 12, 17, 2, 163)
+        ]
+    },
+    "Three Isle Port": {
+        "Three Isle Port West": [
+            (3, 49, 16, 5, 2, 304),
+            (3, 49, 12, 13, 2, 304)
+        ],
+        "Three Isle Port East": [
+            (3, 49, 38, 6, 2, 305)
+        ]
+    },
+    "Three Island Town": {
+        "Three Island Town South": [
+            (3, 14, 14, 28, 2, 282),
+            (3, 14, 3, 32, 2, 282)
+        ],
+        "Three Island Town North": [
+            (3, 14, 4, 7, 2, 282),
+            (3, 14, 12, 7, 2, 282),
+            (3, 14, 12, 13, 2, 282),
+            (3, 14, 18, 13, 2, 282),
+            (3, 14, 13, 20, 2, 282)
+        ]
+    },
+    "Bond Bridge": {
+        "Bond Bridge": [
+            (3, 48, 12, 7, 2, 278)
+        ]
+    },
+    "Four Island Town": {
+        "Four Island Town": [
+            (3, 15, 12, 14, 3, 91),
+            (3, 15, 25, 15, 3, 91),
+            (3, 15, 18, 21, 3, 91),
+            (3, 15, 33, 24, 3, 91),
+            (3, 15, 22, 27, 3, 91),
+            (3, 15, 25, 27, 3, 91),
+            (3, 15, 10, 28, 3, 91)
+        ],
+        "Four Island Town Near Cave": [
+            (3, 15, 38, 13, 3, 91)
+        ]
+    },
+    "Five Island Town": {
+        "Five Island Town": [
+            (3, 16, 12, 7, 3, 258),
+            (3, 16, 18, 7, 3, 258),
+            (3, 16, 22, 10, 3, 258),
+            (3, 16, 12, 14, 3, 258)
+        ]
+    },
+    "Five Isle Meadow": {
+        "Five Isle Meadow": [
+            (3, 56, 12, 22, 3, 281)
+        ]
+    },
+    "Resort Gorgeous": {
+        "Resort Gorgeous Near Resort": [
+            (3, 54, 39, 9, 3, 215)
+        ],
+        "Resort Gorgeous Near Cave": [
+            (3, 54, 64, 14, 3, 216)
+        ]
+    },
+    "Six Island Town": {
+        "Six Island Town": [
+            (3, 18, 11, 12, 4, 127),
+            (3, 18, 20, 12, 4, 127),
+            (3, 18, 16, 18, 4, 127)
+        ]
+    },
+    "Water Path": {
+        "Water Path North": [
+            (3, 60, 5, 14, 4, 84),
+            (3, 60, 11, 20, 4, 84)
+        ]
+    },
+    "Ruin Valley": {
+        "Ruin Valley": [
+            (3, 61, 24, 25, 4, 192)
+        ]
+    },
+    "Green Path": {
+        "Green Path East": [
+            (3, 59, 63, 11, 4, 83)
+        ],
+        "Green Path West": [
+            (3, 59, 45, 11, 4, 82)
+        ]
+    },
+    "Outcast Island": {
+        "Outcast Island": [
+            (3, 58, 7, 22, 4, 15)
+        ]
+    },
+    "Seven Island Town": {
+        "Seven Island Town": [
+            (3, 17, 12, 4, 4, 181),
+            (3, 17, 5, 10, 4, 181),
+            (3, 17, 11, 10, 4, 181),
+            (3, 17, 16, 13, 4, 181)
+        ]
+    },
+    "Sevault Canyon": {
+        "Sevault Canyon": [
+            (3, 64, 7, 18, 4, 204),
+            (3, 64, 14, 62, 4, 248)
+        ]
+    },
+    "Tanoby Ruins": {
+        "Tanoby Ruins Viapois Island": [
+            (3, 65, 11, 7, 4, 267)
+        ],
+        "Tanoby Ruins Rixy Island": [
+            (3, 65, 12, 16, 4, 267)
+        ],
+        "Tanoby Ruins Scufib Island": [
+            (3, 65, 32, 10, 4, 268)
+        ],
+        "Tanoby Ruins Dilford Island": [
+            (3, 65, 44, 12, 4, 269)
+        ],
+        "Tanoby Ruins Weepth Island": [
+            (3, 65, 88, 9, 4, 271)
+        ],
+        "Tanoby Ruins Liptoo Island": [
+            (3, 65, 103, 11, 4, 272)
+        ],
+        "Tanoby Ruins Monean Island": [
+            (3, 65, 120, 11, 4, 273)
+        ]
+    },
+    "Trainer Tower Exterior": {
+        "Trainer Tower Exterior North": [
+            (3, 62, 58, 8, 4, 137)
+        ]
+    }
+}
+
+fly_destination_entrance_map = {
+      "Pallet Town Fly Destination": "SPAWN_PALLET_TOWN",
+      "Viridian City Fly Destination": "SPAWN_VIRIDIAN_CITY",
+      "Pewter City Fly Destination": "SPAWN_PEWTER_CITY",
+      "Route 4 Fly Destination": "SPAWN_ROUTE4",
+      "Cerulean City Fly Destination": "SPAWN_CERULEAN_CITY",
+      "Vermilion City Fly Destination": "SPAWN_VERMILION_CITY",
+      "Route 10 Fly Destination": "SPAWN_ROUTE10",
+      "Lavender Town Fly Destination": "SPAWN_LAVENDER_TOWN",
+      "Celadon City Fly Destination": "SPAWN_CELADON_CITY",
+      "Fuchsia City Fly Destination": "SPAWN_FUCHSIA_CITY",
+      "Saffron City Fly Destination": "SPAWN_SAFFRON_CITY",
+      "Cinnabar Island Fly Destination": "SPAWN_CINNABAR_ISLAND",
+      "Indigo Plateau Fly Destination": 'SPAWN_INDIGO_PLATEAU',
+      "One Island Fly Destination": "SPAWN_ONE_ISLAND",
+      "Two Island Fly Destination": "SPAWN_TWO_ISLAND",
+      "Three Island Fly Destination": "SPAWN_THREE_ISLAND",
+      "Four Island Fly Destination": "SPAWN_FOUR_ISLAND",
+      "Five Island Fly Destination": "SPAWN_FIVE_ISLAND",
+      "Six Island Fly Destination": "SPAWN_SIX_ISLAND",
+      "Seven Island Fly Destination": "SPAWN_SEVEN_ISLAND"
 }
 
 
@@ -406,6 +902,25 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                              "SPAWN_SEVEN_ISLAND"])
         allowed_starting_towns = [town for town in STARTING_TOWNS.keys() if town not in forbidden_starting_towns]
         world.starting_town = world.random.choice(allowed_starting_towns)
+
+    if world.options.randomize_fly_destinations:
+        fly_destinations = kanto_fly_destinations.copy()
+        if not world.options.kanto_only:
+            fly_destinations.update(sevii_fly_destinations)
+        maps_already_chosen = set()
+        for exit in regions["Sky"].exits:
+            regions[exit.connected_region.name].entrances.remove(exit)
+            exit.connected_region = None
+            allowed_maps = [k for k in fly_destinations.keys() if k not in maps_already_chosen]
+            map = world.random.choice(allowed_maps)
+            allowed_regions = list(fly_destinations[map].keys())
+            region = world.random.choice(allowed_regions)
+            allowed_warps = fly_destinations[map][region]
+            warp = world.random.choice(allowed_warps)
+            maps_already_chosen.add(map)
+            exit.connected_region = regions[region]
+            regions[region].entrances.append(exit)
+            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = warp
 
     regions["Menu"] = PokemonFRLGRegion("Menu", world.player, world.multiworld)
     regions["Menu"].connect(regions[STARTING_TOWNS[world.starting_town]], "Start Game")

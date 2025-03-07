@@ -121,6 +121,7 @@ class PokemonFRLGWorld(World):
     encounter_level_list: List[int]
     scaling_data: List[ScalingData]
     filler_items: List[PokemonFRLGItem]
+    fly_destination_data: Dict[str, Tuple[str, int, int, int, int, int, int]]
     auth: bytes
 
     def __init__(self, multiworld, player):
@@ -149,6 +150,7 @@ class PokemonFRLGWorld(World):
         self.encounter_level_list = list()
         self.scaling_data = list()
         self.filler_items = list()
+        self.fly_destination_data = dict()
         self.finished_level_scaling = threading.Event()
 
     @classmethod
@@ -647,11 +649,12 @@ class PokemonFRLGWorld(World):
         del self.encounter_name_list
         del self.encounter_level_list
         del self.scaling_data
+        del self.fly_destination_data
 
     def write_spoiler_header(self, spoiler_handle: TextIO) -> None:
         if self.options.random_starting_town:
             starting_town = STARTING_TOWNS[self.starting_town]
-            if starting_town == "Viridian City South":
+            if starting_town == "Viridian City South" or starting_town == "Three Island Town South":
                 starting_town = starting_town[:-6]
             spoiler_handle.write(f"Starting Town:                   {starting_town}\n")
         if self.options.free_fly_location != FreeFlyLocation.option_off:
@@ -662,6 +665,12 @@ class PokemonFRLGWorld(World):
             spoiler_handle.write(f"Town Map Fly Location:           {town_map_fly_location.item.name[4:]}\n")
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:
+        # Add fly destinations to the spoiler log if they are randomized
+        if self.options.randomize_fly_destinations:
+            spoiler_handle.write(f"\n\nFly Destinations ({self.multiworld.player_name[self.player]}):\n\n")
+            for exit in self.get_region("Sky").exits:
+                spoiler_handle.write(f"{exit.name}: {exit.connected_region}\n")
+
         # Add Pokémon locations to the spoiler log if they are not vanilla
         if (self.options.wild_pokemon != RandomizeWildPokemon.option_vanilla or
                 self.options.misc_pokemon != RandomizeMiscPokemon.option_vanilla or

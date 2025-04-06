@@ -2,9 +2,9 @@
 Option definitions for Pokémon FireRed/LeafGreen
 """
 from dataclasses import dataclass
-from schema import Schema, And, Use
+from schema import Optional, Schema, And, Use
 from Options import Choice, DeathLink, DefaultOnToggle, NamedRange, OptionDict, OptionSet, PerGameCommonOptions, Range, Toggle
-from .data import data
+from .data import data, ability_name_map, fly_blacklist_map, fly_plando_maps, move_name_map, starting_town_blacklist_map
 
 
 class GameVersion(Choice):
@@ -21,13 +21,21 @@ class Goal(Choice):
     """
     Sets what your goal is to consider the game beaten.
 
-    - Elite Four: Defeat the Elite Four
-    - Elite Four Rematch: Defeat the Elite Four Rematch
+    - Champion: Defeat the Champion
+    - Champion Rematch: Defeat the Champion Rematch
     """
     display_name = "Goal"
     default = 0
-    option_elite_four = 0
-    option_elite_four_rematch = 1
+    option_champion = 0
+    option_champion_rematch = 1
+
+
+class SkipEliteFour(Toggle):
+    """
+    Set whether to skip the Elite Four fights and go straight to the Champion fight when entering the
+    Pokemon League.
+    """
+    display_name = "Skip Elite Four"
 
 
 class KantoOnly(Toggle):
@@ -47,12 +55,73 @@ class RandomStartingTown(Toggle):
     display_name = "Random Starting Town"
 
 
+class StartingTownBlacklist(OptionSet):
+    """
+    Prevents certain towns from being chosen as your random starting town.
+
+    Has no effect if the starting town is not randomized.
+    """
+    display_name = "Starting Town Blacklist"
+    valid_keys = list(starting_town_blacklist_map.keys())
+
+
+class DungeonEntranceShuffle(Choice):
+    """
+    Shuffles dungeon entrances.
+
+    Off: Dungeon entrances are not shuffled
+    Simple: Single entrance dungeons and multi entrance dungeons are shuffled separately from each other. Both
+            entrances for multi entrance dungeons will connect to the same dungeon
+    Restricted: Single entrance dungeons and multi entrance dungeons are shuffled separately from each other. Both
+                entrances for multi entrance dungeons do not need to lead to the same dungeon
+    Full: All dungeon entrances are shuffled together
+    """
+    display_name = "Dungeon Entrance Shuffle"
+    default = 0
+    option_off = 0
+    option_simple = 1
+    option_restricted = 2
+    option_full = 3
+
+
 class RandomizeFlyDestinations(Toggle):
     """
     Randomizes where each fly point takes you. The new fly destinations can be almost any outdoor warp point in the
     game with a few exceptions (Cycling Road Gates for example).
     """
     display_name = "Randomize Fly Destinations"
+
+
+class FlyDestinationPlando(OptionDict):
+    """
+    Plando what map certain fly unlocks will take you to. For example \"Pallet Town Fly Destination\": \"Route 8\"
+    will make it so that unlocking the Pallet Town fly point will let you fly to Route 8.
+
+    Has no effect if fly destinations aren't randomized.
+    """
+    display_name = "Fly Destination Plando"
+    schema = Schema({
+        Optional("Pallet Town Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Viridian City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Pewter City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Route 4 Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Cerulean City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Vermilion City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Route 10 Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Lavender Town Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Celadon City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Fuchsia City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Saffron City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Cinnabar Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Indigo Plateau Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("One Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Two Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Three Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Four Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Five Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Six Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Seven Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+    })
 
 
 class ShuffleBadges(DefaultOnToggle):
@@ -66,9 +135,9 @@ class ShuffleHiddenItems(Choice):
     """
     Shuffle Hidden Items into the general item pool.
 
-    - Off: Hidden Items are not shuffled.
-    - Nonrecurring: Nonrecurring Hidden Items are shuffled.
-    - All: All Hidden Items are shuffled. Recurring Hidden Items will always appear and will not regenerate.
+    - Off: Hidden Items are not shuffled
+    - Nonrecurring: Nonrecurring Hidden Items are shuffled
+    - All: All Hidden Items are shuffled. Recurring Hidden Items will always appear and will not regenerate
     """
     display_name = "Shuffle Hidden Items"
     default = 0
@@ -88,6 +157,50 @@ class ExtraKeyItems(Toggle):
     - Hidden Item in the Cerulean Gym (requires Surf & Itemfinder)
     """
     display_name = "Extra Key Items"
+
+
+class Shopsanity(Toggle):
+    """
+    Shuffles shop items into the general item pool. The Celadon Department Store 4F Held Items Shop is not shuffled.
+    """
+    display_name = "Shopsanity"
+
+
+class ShopPrices(Choice):
+    """
+    Sets how Shop Item's prices are determined when Shopsanity is on.
+
+    - Spheres: Shop prices are determined by sphere access
+    - Classification: Shop prices are determined by item classifications (Progression, Useful, Filler/Trap)
+    - Spheres and Classifications: Shop prices are determined by both sphere access and item classifications
+    - Completely Random: Shop prices will be completely random
+    """
+    display_name = "Shop Prices"
+    default = 2
+    option_spheres = 0
+    option_classification = 1
+    option_spheres_and_classification = 2
+    option_completely_random = 3
+
+
+class MinimumShopPrice(Range):
+    """
+    Sets the minimum cost of Shop Items when Shopsanity is on.
+    """
+    display_name = "Minimum Shop Price"
+    default = 100
+    range_start = 1
+    range_end = 9999
+
+
+class MaximumShopPrice(Range):
+    """
+    Sets the maximum cost of Shop Items when Shopsanity is on.
+    """
+    display_name = "Maximum Shop Price"
+    default = 3000
+    range_start = 1
+    range_end = 9999
 
 
 class Trainersanity(NamedRange):
@@ -142,16 +255,16 @@ class Famesanity(Toggle):
     display_name = "Famesanity"
 
 
-class ShuffleFlyDestinationUnlocks(Choice):
+class ShuffleFlyUnlocks(Choice):
     """
     Shuffles the ability to fly to Pokemon Centers into the pool. Entering the map that normally would unlock the
-    fly destination gives a random item.
+    fly point on the map gives a random item.
 
-    - Off: Fly Destination Unlocks are not shuffled.
-    - Exclude Indigo: Fly Destination Unlocks are shuffled. Indigo Plateau Fly Unlock is vanilla.
-    - All: Fly Destination Unlocks are shuffled.
+    - Off: Fly Unlocks are not shuffled
+    - Exclude Indigo: Fly Unlocks are shuffled. Indigo Plateau Fly Unlock is vanilla
+    - All: Fly Unlocks are shuffled
     """
-    display_name = "Shuffle Fly Destination Unlocks"
+    display_name = "Shuffle Fly Unlocks"
     default = 0
     option_off = 0
     option_exclude_indigo = 1
@@ -178,14 +291,28 @@ class ShuffleRunningShoes(Choice):
     option_start_with = 2
 
 
+class ShuffleBerryPouch(Toggle):
+    """
+    Shuffles the berry pouch into the item pool. If not shuffled then you will start with it.
+    """
+    display_name = "Shuffle Berry Pouch"
+
+
+class ShuffleTMCase(Toggle):
+    """
+    Shuffles the TM case into the item pool. If not shuffled then you will start with it.
+    """
+    display_name = "Shuffle TM Case"
+
+
 class SilphCoCardKey(Choice):
     """
     Sets how the card key that unlocks the doors in Silph Co. is handled. If Split or Progressive, nine new locations
     will be added to Silph Co. in the form of item balls on floors 2 through 11 (except for floor five).
 
     - Vanilla: There is one Card Key in the pool that unlocks every door in Silph Co.
-    - Split: The Card Key is split into ten items, one for each floor of Silph Co. that has doors.
-    - Progressive: The Card Key is split into ten items, and you will always obtain them in order from 2F to 11F.
+    - Split: The Card Key is split into ten items, one for each floor of Silph Co. that has doors
+    - Progressive: The Card Key is split into ten items, and you will always obtain them in order from 2F to 11F
     """
     display_name = "Silph Co. Card Key"
     default = 0
@@ -199,12 +326,12 @@ class SeviiIslandPasses(Choice):
     Sets how the passes that allow you to travel to the Sevii Islands are handled. If Split or Progressive, five new
     locations will be added to events related to the Sevii Islands.
 
-    - Vanilla: The Tri Pass and Rainbow Pass are two separate items in the pool and can be found in any order.
+    - Vanilla: The Tri Pass and Rainbow Pass are two separate items in the pool and can be found in any order
     - Progressive: There are two Progressive Passes in the pool. You will always obtain the Tri Pass before the Rainbow
-                   Pass.
-    - Split: The Tri Pass and Rainbow Pass are split into seven items, one for each island.
+                   Pass
+    - Split: The Tri Pass and Rainbow Pass are split into seven items, one for each island
     - Progressive Split: The Tri Pass and Rainbow Pass are split into seven items, and you will always obtain the Passes
-                         in order from the First Pass to the Seventh Pass.
+                         in order from the First Pass to the Seventh Pass
     """
     display_name = "Sevii Island Passes"
     default = 0
@@ -228,14 +355,31 @@ class SplitTeas(Toggle):
     display_name = "Split Teas"
 
 
+class GymKeys(Toggle):
+    """
+    Adds keys that are needed to enter each of the gyms similar to the Secret Key. Renames the Secret Key to the
+    Cinnabar Key.
+
+    Adds seven new locations:
+    - Item in the Pewter Museum 2F
+    - Item from Man on a Date at Route 25
+    - Item in Diglett's Cave B1F
+    - Item in the Celadon Hotel
+    - Item in the Safari Zone East Rest House
+    - Item in the Saffron Dojo
+    - Item from the Old Man near Viridian Gym
+    """
+    display_name = "Gym Keys"
+
+
 class ItemfinderRequired(Choice):
     """
     Sets whether the Itemfinder if required for Hidden Items. Some items cannot be picked up without using the
     Itemfinder regardless of this setting (e.g. the Leftovers under Snorlax on Route 12 & 16).
 
-    - Off: The Itemfinder is not required to pickup Hidden Items.
-    - Logic: The Itemfinder is logically required to pickup Hidden Items.
-    - Required: The Itemfinder is required to pickup Hidden Items.
+    - Off: The Itemfinder is not required to pickup Hidden Items
+    - Logic: The Itemfinder is logically required to pickup Hidden Items
+    - Required: The Itemfinder is required to pickup Hidden Items
     """
     display_name = "Itemfinder Required"
     default = 1
@@ -248,9 +392,9 @@ class FlashRequired(Choice):
     """
     Sets whether HM05 Flash is logically required to navigate dark caves.
 
-    - Off: Flash is not required to navigate dark caves.
-    - Logic: Flash is logically required to navigate dark caves.
-    - Required: Flash is required to navigate dark caves.
+    - Off: Flash is not required to navigate dark caves
+    - Logic: Flash is logically required to navigate dark caves
+    - Required: Flash is required to navigate dark caves
     """
     display_name = "Flash Required"
     default = 1
@@ -268,14 +412,32 @@ class FameCheckerRequired(DefaultOnToggle):
     display_name = "Fame Checker Required"
 
 
+class EvolutionsRequired(OptionSet):
+    """
+    Sets which types of locations and/or access rules that evolutions may be logically required for.
+    """
+    display_name = "Evolutions Required"
+    valid_keys = ["HM Requirement", "Oak's Aides", "Dexsanity"]
+    default = ["HM Requirement", "Oak's Aides", "Dexsanity"]
+
+
+class EvolutionMethodsRequired(OptionSet):
+    """
+    Sets which types of evolutions may be logically required.
+    """
+    display_name = "Evolution Methods Required"
+    valid_keys = ["Level", "Level Tyrogue", "Level Wurmple", "Evo Item", "Evo & Held Item", "Friendship"]
+    default = ["Level", "Level Tyrogue", "Level Wurmple", "Evo Item", "Evo & Held Item", "Friendship"]
+
+
 class ViridianCityRoadblock(Choice):
     """
     Sets the requirement for passing the Viridian City Roadblock.
 
-    - Vanilla: The Old Man moves out of the way after delivering Oak's Parcel.
+    - Vanilla: The Old Man moves out of the way after delivering Oak's Parcel
     - Early Parcel: Same as Vanilla but Oak's Parcel will be available at the beginning of your game. This option will
-                    have no effect and be treated as Vanilla if Random Starting Town is on.
-    - Open: The Old Man is moved out of the way at the start of the game.
+                    have no effect and be treated as Vanilla if Random Starting Town is on
+    - Open: The Old Man is moved out of the way at the start of the game
     """
     display_name = "Viridian City Roadblock"
     default = 1
@@ -288,11 +450,11 @@ class PewterCityRoadblock(Choice):
     """
     Sets the requirement for passing the Pewter City Roadblock.
 
-    - Open: The boy will not stop you from entering Route 3.
-    - Brock: The boy will stop you from entering Route 3 until you defeat Brock.
-    - Any Gym Leader: The boy will stop you from entering Route 3 until you defeat any Gym Leader.
-    - Boulder Badge: The boy will stop you from entering Route 3 until you have the Boulder Badge.
-    - Any Badge: The boy will stop you from entering Route 3 until you have a Badge.
+    - Open: The boy will not stop you from entering Route 3
+    - Brock: The boy will stop you from entering Route 3 until you defeat Brock
+    - Any Gym Leader: The boy will stop you from entering Route 3 until you defeat any Gym Leader
+    - Boulder Badge: The boy will stop you from entering Route 3 until you have the Boulder Badge
+    - Any Badge: The boy will stop you from entering Route 3 until you have a Badge
     """
     display_name = "Pewter City Roadblock"
     default = 1
@@ -306,26 +468,26 @@ class PewterCityRoadblock(Choice):
 class ModifyWorldState(OptionSet):
     """
     Set various changes to the world's state that changes how you can access various regions and locations.
-    The valid options and their effects are the following:
 
-    - Modify Route 2: Replaces the northmost cuttable tree with a smashable rock.
-    - Remove Cerulean Roadblocks: Removes the policeman and slowpoke that block the exits of the city.
-    - Block Tunnels: Blocks the entrances to the underground tunnels with smashable rocks.
-    - Modify Route 9: Replaces the cuttable tree with a smashable rock.
-    - Modify Route 10: Adds a waterfall to Route 10 that connects the north and south sides.
-    - Block Tower: Blocks the 1F stairs of Pokemon Tower with a ghost battle.
-    - Route 12 Boulders: Adds boulders to Route 12 that block the exits to Route 11 & 13.
-    - Modify Route 12: Adds impassable rocks to Route 12 that prevent surfing around Snorlax.
-    - Modify Route 16: Adds a smashable rock to Route 16 that allows you to bypass the Snorlax.
+    The valid options and their effects are the following:
+    - Modify Route 2: Replaces the northmost cuttable tree with a smashable rock
+    - Remove Cerulean Roadblocks: Removes the policeman and slowpoke that block the exits of the city
+    - Block Tunnels: Blocks the entrances to the underground tunnels with smashable rocks
+    - Modify Route 9: Replaces the cuttable tree with a smashable rock
+    - Modify Route 10: Adds a waterfall to Route 10 that connects the north and south sides
+    - Block Tower: Blocks the 1F stairs of Pokemon Tower with a ghost battle
+    - Route 12 Boulders: Adds boulders to Route 12 that block the exits to Route 11 & 13
+    - Modify Route 12: Adds impassable rocks to Route 12 that prevent surfing around Snorlax
+    - Modify Route 16: Adds a smashable rock to Route 16 that allows you to bypass the Snorlax
     - Open Silph: Moves the Team Rocket Grunt that blocks the entrance to Silph Co.
-    - Remove Saffron Rockets: Removed the Team Rocket Grunts from Saffron City.
-    - Route 23 Trees: Adds cuttable trees to Route 23 under the sixth checkpoint.
-    - Modify Route 23: Adds a waterfall to Route 23 at the end of the water section.
-    - Victory Road Rocks: Adds smashable rocks to Victory Road that block the floor switches.
-    - Early Gossipers: Removes the requirement to have entered the Hall of Fame from various Famesanity locations.
-    - Total Darkness: Changes dark caves to be completely black and provide no vision without Flash.
+    - Remove Saffron Rockets: Removed the Team Rocket Grunts from Saffron City
+    - Route 23 Trees: Adds cuttable trees to Route 23 under the sixth checkpoint
+    - Modify Route 23: Adds a waterfall to Route 23 at the end of the water section
+    - Victory Road Rocks: Adds smashable rocks to Victory Road that block the floor switches
+    - Early Gossipers: Removes the requirement to have entered the Hall of Fame from various Famesanity locations
+    - Total Darkness: Changes dark caves to be completely black and provide no vision without Flash
     - Block Vermilion Sailing: Prevents you from sailing to Vermilion City on the Seagallop until you have gotten
-                               the S.S. Ticket.
+                               the S.S. Ticket
     """
     display_name = "Modify World State"
     valid_keys = ["Modify Route 2", "Remove Cerulean Roadblocks", "Block Tunnels", "Modify Route 9",
@@ -351,7 +513,7 @@ class RemoveBadgeRequirement(OptionSet):
     """
     Removes the badge requirement to use any of the HMs listed.
 
-    HMs need to be listed by the move name. (e.g. Cut, Fly, Surf, etc.)
+    HMs need to be listed by the move name (e.g. Cut, Fly, Surf, etc.).
     """
     display_name = "Remove Badge Requirement"
     valid_keys = ["Cut", "Fly", "Surf", "Strength", "Flash", "Rock Smash", "Waterfall"]
@@ -416,8 +578,8 @@ class ViridianGymRequirement(Choice):
     """
     Sets the requirement for opening the Viridian Gym.
 
-    - Badges: Obtain some number of Badges.
-    - Gyms: Beat some number of Gyms.
+    - Badges: Obtain some number of Badges
+    - Gyms: Beat some number of Gyms
     """
     display_name = "Viridian Gym Requirement"
     default = 0
@@ -439,8 +601,8 @@ class Route22GateRequirement(Choice):
     """
     Sets the requirement for passing through the Route 22 Gate.
 
-    - Badges: Obtain some number of Badges.
-    - Gyms: Beat some number of Gyms.
+    - Badges: Obtain some number of Badges
+    - Gyms: Beat some number of Gyms
     """
     display_name = "Route 22 Gate Requirement"
     default = 0
@@ -462,8 +624,8 @@ class Route23GuardRequirement(Choice):
     """
     Sets the requirement for passing the Route 23 Guard.
 
-    - Badges: Obtain some number of Badges.
-    - Gyms: Beat some number of Gyms.
+    - Badges: Obtain some number of Badges
+    - Gyms: Beat some number of Gyms
     """
     display_name = "Route 23 Guard Requirement"
     default = 0
@@ -485,8 +647,8 @@ class EliteFourRequirement(Choice):
     """
     Sets the requirement for challenging the Elite Four.
 
-    - Badges: Obtain some number of Badges.
-    - Gyms: Beat some number of Gyms.
+    - Badges: Obtain some number of Badges
+    - Gyms: Beat some number of Gyms
     """
     display_name = "Elite Four Requirement"
     default = 0
@@ -518,11 +680,11 @@ class CeruleanCaveRequirement(Choice):
     """
     Sets the requirement for being able to enter Cerulean Cave.
 
-    - Vanilla: Become the Champion and restore the Network Machine on the Sevii Islands.
-    - Champion: Become the Champion.
-    - Network Machine: Restore the Network Machine on the Sevii Islands.
-    - Badges: Obtain some number of Badges.
-    - Gyms: Beat some number of Gyms.
+    - Vanilla: Become the Champion and restore the Network Machine on the Sevii Islands
+    - Champion: Become the Champion
+    - Network Machine: Restore the Network Machine on the Sevii Islands
+    - Badges: Obtain some number of Badges
+    - Gyms: Beat some number of Gyms
     """
     display_name = "Cerulean Cave Requirement"
     default = 0
@@ -548,9 +710,9 @@ class LevelScaling(Choice):
     """
     Sets whether encounter levels are scaled by sphere access.
 
-    - Off: Vanilla levels are used.
-    - Spheres: Levels are scaled based on sphere access.
-    - Spheres and Distance: Levels are scaled based on sphere access and the distance they are from your starting town.
+    - Off: Vanilla levels are used
+    - Spheres: Levels are scaled based on sphere access
+    - Spheres and Distance: Levels are scaled based on sphere access and the distance they are from your starting town
     """
     display_name = "Level Scaling"
     default = 0
@@ -719,7 +881,7 @@ class RandomizeLegendaryPokemon(Choice):
 
 class RandomizeMiscPokemon(Choice):
     """
-    Randomizes misc Pokemon. This includes non-legendary static encounters, gift Pokemon, and trade Pokemon
+    Randomizes misc Pokemon. This includes non-legendary static encounters, gift Pokemon, and trade Pokemon.
 
     - Vanilla: Species are unchanged
     - Match Base Stats: Species are replaced with species with approximately the same bst
@@ -775,7 +937,7 @@ class AbilityBlacklist(OptionSet):
     Has no effect if abilities are not randomized.
     """
     display_name = "Ability Blacklist"
-    valid_keys = sorted(data.abilities.keys())
+    valid_keys = sorted(ability_name_map.keys())
 
 
 class RandomizeMoves(Choice):
@@ -794,12 +956,79 @@ class RandomizeMoves(Choice):
     option_start_with_four_moves = 2
 
 
+class MoveMatchTypeBias(Range):
+    """
+    Sets the probability that a learned move will be forced to match one of the types of a Pokemon.
+
+    If a move is not forced to match type, it will roll for Normal type bias.
+    """
+    display_name = "Move Match Type Bias"
+    default = 0
+    range_start = 0
+    range_end = 100
+
+
+class MoveNormalTypeBias(Range):
+    """
+    Sets the probability that a learned move will be forced to be a Normal type move.
+
+    If a move is not forced to be Normal, it will be completely random.
+    """
+    display_name = "Move Normal Type Bias"
+    default = 0
+    range_start = 0
+    range_end = 100
+
+
 class MoveBlacklist(OptionSet):
     """
     Prevents species from learning these moves via learnsets, TMs, and move tutors.
+
+    Has no effect is moves are not randomized.
     """
     display_name = "Move Blacklist"
-    valid_keys = sorted(data.moves.keys())
+    valid_keys = sorted(move_name_map.keys())
+
+
+class PhysicalSpecialSplit(Toggle):
+    """
+    Changes the damage category that moves use to match the categories since the Gen IV physical/special split instead
+    of the damage category being determined by the move's type.
+    """
+    display_name = "Physical/Special Split"
+
+
+class RandomizeMoveTypes(Choice):
+    """
+    Randomizes the type for each move.
+
+    - Vanilla: Move types are unchanged
+    - Shuffle: Move types are shuffled globally for all moves (e.g. every Water-type Move becomes Fire-type)
+    - Completely Random: Each move has its type randomized
+    """
+    display_name = "Randomize Move Types"
+    default = 0
+    option_vanilla = 0
+    option_shuffle = 1
+    option_completely_random = 2
+
+
+class RandomizeDamageCategories(Choice):
+    """
+    Randomizes the damage category for each move/type. Will randomized the damage category of the moves individually or
+    by each type depending on if the Physical/Special Split option is on.
+
+    - Vanilla: Damage Categories are unchanged
+    - Shuffle: Damage Categories for moves/types are shuffled so the amount of physical and special moves/types will
+               remain the same
+    - Completely Random: Each moves/types damage category is chosen at random with no regard to maintaining the same
+                         amount of physical and special moves/types
+    """
+    display_name = "Randomize Damage Categories"
+    default = 0
+    option_vanilla = 0
+    option_shuffle = 1
+    option_completely_random = 2
 
 
 class HmCompatibility(NamedRange):
@@ -900,33 +1129,42 @@ class BetterShops(Toggle):
 
     - Celadon Department Store 2F TM Pokemart
     - Celadon Department Store 4F Evo Stone Pokemart
+    - Celadon Department Store 4F Held Items Pokemart
     - Celadon Department Store 5F Vitamin Pokemart
     - Two Island Market Stall
     """
     display_name = "Better Shops"
 
 
-class FreeFlyLocation(Choice):
+class FreeFlyLocation(Toggle):
     """
     Enables flying to one random location (excluding cities reachable with no items).
     """
     display_name = "Free Fly Location"
-    default = 0
-    option_off = 0
-    option_exclude_indigo = 1
-    option_any = 2
 
 
-class TownMapFlyLocation(Choice):
+class FreeFlyBlacklist(OptionSet):
     """
-    Enables flying to one random location once the town map has been obtained
-    (excluding cities reachable with no items).
+    Prevents certain towns from being chosen as your free fly location.
+    """
+    display_name = "Free Fly Blacklist"
+    valid_keys = list(fly_blacklist_map.keys())
+
+
+class TownMapFlyLocation(Toggle):
+    """
+    Enables flying to one random location once the town map has been obtained (excluding cities reachable with no
+    items).
     """
     display_name = "Town Map Fly Location"
-    default = 0
-    option_off = 0
-    option_exclude_indigo = 1
-    option_any = 2
+
+
+class TownMapFlyBlacklist(OptionSet):
+    """
+    Prevents certain towns from being chosen as your town map fly location.
+    """
+    display_name = "Town Map Fly Blacklist"
+    valid_keys = list(fly_blacklist_map.keys())
 
 
 class RandomizeMusic(Toggle):
@@ -948,24 +1186,24 @@ class GameOptions(OptionDict):
     Allows you to preset the in game options.
     The available options and their allowed values are the following:
 
-    - Text Speed: Slow, Mid, Fast, Instant
-    - Turbo A: Off, On
     - Auto Run: Off, On
-    - Button Mode: Help, LR, L=A
-    - Frame: 1-10
     - Battle Scene: Off, On
     - Battle Style: Shift, Set
-    - Show Effectiveness: Off, On
-    - Experience: None, Half, Normal, Double, Triple, Quadruple, Custom
-    - Sound: Mono, Stereo
-    - Low HP Beep: Off, On
-    - Skip Fanfares: Off, On
     - Bike Music: Off, On
-    - Surf Music: Off, On
-    - Guaranteed Catch: Off, On
-    - Encounter Rates: Vanilla, Normalized
     - Blind Trainers: Off, On
+    - Button Mode: Help, LR, L=A
+    - Encounter Rates: Vanilla, Normalized
+    - Experience: None, Half, Normal, Double, Triple, Quadruple, Custom
+    - Frame: 1-10
+    - Guaranteed Catch: Off, On
     - Item Messages: All, Progression, None
+    - Low HP Beep: Off, On
+    - Show Effectiveness: Off, On
+    - Skip Fanfares: Off, On
+    - Sound: Mono, Stereo
+    - Surf Music: Off, On
+    - Text Speed: Slow, Mid, Fast, Instant
+    - Turbo A: Off, On
     """
     display_name = "Game Options"
     default = {"Text Speed": "Instant", "Turbo A": "Off", "Auto Run": "Off", "Button Mode": "Help", "Frame": 1,
@@ -999,7 +1237,7 @@ class ProvideHints(Toggle):
     """
     Provides an Archipelago Hint for locations that tell you what item they give once you've gotten the in game hint.
 
-    This includes the Oak's Aides, Bicycle Shop, and Pokemon Request Locations
+    This includes the Oak's Aides, Bicycle Shop, and Pokemon Request Locations.
     """
     display_name = "Provide Hints"
 
@@ -1012,26 +1250,39 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     game_version: GameVersion
 
     goal: Goal
+    skip_elite_four: SkipEliteFour
     kanto_only: KantoOnly
     random_starting_town: RandomStartingTown
+    starting_town_blacklist: StartingTownBlacklist
+    dungeon_entrance_shuffle: DungeonEntranceShuffle
     randomize_fly_destinations: RandomizeFlyDestinations
+    fly_destination_plando: FlyDestinationPlando
 
     shuffle_badges: ShuffleBadges
     shuffle_hidden: ShuffleHiddenItems
     extra_key_items: ExtraKeyItems
+    shopsanity: Shopsanity
+    shop_prices: ShopPrices
+    minimum_shop_price: MinimumShopPrice
+    maximum_shop_price: MaximumShopPrice
     trainersanity: Trainersanity
     dexsanity: Dexsanity
     famesanity: Famesanity
-    shuffle_fly_destination_unlocks: ShuffleFlyDestinationUnlocks
+    shuffle_fly_unlocks: ShuffleFlyUnlocks
     pokemon_request_locations: PokemonRequestLocations
     shuffle_running_shoes: ShuffleRunningShoes
+    shuffle_berry_pouch: ShuffleBerryPouch
+    shuffle_tm_case: ShuffleTMCase
     card_key: SilphCoCardKey
     island_passes: SeviiIslandPasses
     split_teas: SplitTeas
+    gym_keys: GymKeys
 
     itemfinder_required: ItemfinderRequired
     flash_required: FlashRequired
     fame_checker_required: FameCheckerRequired
+    evolutions_required: EvolutionsRequired
+    evolution_methods_required: EvolutionMethodsRequired
     viridian_city_roadblock: ViridianCityRoadblock
     pewter_city_roadblock: PewterCityRoadblock
     modify_world_state: ModifyWorldState
@@ -1073,7 +1324,12 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     abilities: RandomizeAbilities
     ability_blacklist: AbilityBlacklist
     moves: RandomizeMoves
+    move_match_type_bias: MoveMatchTypeBias
+    move_normal_type_bias: MoveNormalTypeBias
     move_blacklist: MoveBlacklist
+    physical_special_split: PhysicalSpecialSplit
+    move_types: RandomizeMoveTypes
+    damage_categories: RandomizeDamageCategories
     hm_compatibility: HmCompatibility
     tm_tutor_compatibility: TmTutorCompatibility
     tm_tutor_moves: TmTutorMoves
@@ -1085,7 +1341,9 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     starting_money: StartingMoney
     better_shops: BetterShops
     free_fly_location: FreeFlyLocation
+    free_fly_blacklist: FreeFlyBlacklist
     town_map_fly_location: TownMapFlyLocation
+    town_map_fly_blacklist: TownMapFlyBlacklist
 
     randomize_music: RandomizeMusic
     randomize_fanfares: RandomizeFanfares
